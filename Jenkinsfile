@@ -16,7 +16,8 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/umamahesh571/Docker-jenkins-integration.git'
+                // Checkout the 'main' branch from GitHub
+                git branch: 'main', url: 'https://github.com/umamahesh571/Docker-jenkins-integration.git'
             }
         }
 
