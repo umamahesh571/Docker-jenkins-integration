@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: evolve-ui-deployment
+  labels:
+    app: evolve-ui
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: evolve-ui
+  template:
+    metadata:
+      labels:
+        app: evolve-ui
+    spec:
+      containers:
+        - name: evolve-ui
+          image: umamahesh571/evolve-ui:latest
+          ports:
+            - containerPort: 8090
+          imagePullPolicy: Always
