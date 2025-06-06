@@ -2,21 +2,18 @@ pipeline {
     agent any
 
     environment {
-        // Credentials must be added in Jenkins as a username/password type with ID: 'dockerhub'
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub')
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
         DOCKERHUB_USERNAME = "${DOCKERHUB_CREDENTIALS_USR}"
         DOCKERHUB_PASSWORD = "${DOCKERHUB_CREDENTIALS_PSW}"
         APP_NAME = "evolve-ui"
         VERSION = "1.0.0"
         JAR_FILE = "target/${APP_NAME}-${VERSION}.jar"
         DOCKER_IMAGE = "${DOCKERHUB_USERNAME}/${APP_NAME}:latest"
-        CONTAINER_NAME = "${APP_NAME}-container"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Checkout the 'main' branch from GitHub
                 git branch: 'main', url: 'https://github.com/umamahesh571/Docker-jenkins-integration.git'
             }
         }
@@ -44,22 +41,24 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy to Kubernetes') {
             steps {
-                sh """
-                    docker rm -f $CONTAINER_NAME || true
-                    docker run -d -p 8090:8090 --name $CONTAINER_NAME $DOCKER_IMAGE
-                """
+                script {
+                    sh """
+                        kubectl apply -f deployment.yaml
+                        kubectl apply -f service.yaml
+                    """
+                }
             }
         }
     }
 
     post {
         success {
-            echo "✅ Build, Docker push, and deployment completed successfully!"
+            echo "✅ Build, push, and Kubernetes deployment completed!"
         }
         failure {
-            echo "❌ Pipeline failed. Check above logs for error."
+            echo "❌ Pipeline failed. Investigate above steps."
         }
     }
 }
