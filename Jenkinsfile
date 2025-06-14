@@ -41,12 +41,13 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Run Docker Container') {
             steps {
                 script {
                     sh """
-                        kubectl apply -f deployment.yaml
-                        kubectl apply -f service.yaml
+                        docker stop $APP_NAME || true
+                        docker rm $APP_NAME || true
+                        docker run -d --name $APP_NAME -p 8090:8080 $DOCKER_IMAGE
                     """
                 }
             }
@@ -55,7 +56,7 @@ pipeline {
 
     post {
         success {
-            echo "✅ Build, push, and Kubernetes deployment completed!"
+            echo "✅ Build, push, and Docker deployment completed!"
         }
         failure {
             echo "❌ Pipeline failed. Investigate above steps."
