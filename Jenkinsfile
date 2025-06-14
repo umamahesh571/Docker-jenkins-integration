@@ -47,7 +47,7 @@ pipeline {
                     sh """
                         docker stop $APP_NAME || true
                         docker rm $APP_NAME || true
-                        docker run -d --name $APP_NAME -p 8090:8080 $DOCKER_IMAGE
+                        docker run -d --name $APP_NAME -p 8090:8090 $DOCKER_IMAGE
                     """
                 }
             }
