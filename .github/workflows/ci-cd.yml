@@ -1,0 +1,63 @@
+name: CI/CD Pipeline with Maven & Docker
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build-docker-run:
+    runs-on: ubuntu-latest
+
+    env:
+      APP_NAME: evolve-ui
+      VERSION: 1.0.0
+      JAR_FILE: target/evolve-ui-1.0.0.jar
+      DOCKER_IMAGE: umamahesh571/evolve-ui:latest
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 2. Set up JDK 17
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+
+      # 3. Build with Maven
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      # 4. Log in to DockerHub
+      - name: Log in to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # 5. Build Docker Image
+      - name: Build Docker Image
+        run: docker build -t $DOCKER_IMAGE .
+
+      # 6. Push to DockerHub
+      - name: Push Docker Image
+        run: docker push $DOCKER_IMAGE
+
+      # 7. Run Docker Container
+      - name: Run Docker Container
+        run: |
+          docker stop $APP_NAME || true
+          docker rm $APP_NAME || true
+          docker run -d --name $APP_NAME -p 8090:8090 $DOCKER_IMAGE
+
+      # 8. Post Success/Failure Messages
+      - name: Pipeline Success
+        if: success()
+        run: echo "✅ Build, push, and Docker deployment completed!"
+
+      - name: Pipeline Failure
+        if: failure()
+        run: echo "❌ Pipeline failed. Investigate above steps."
