@@ -1,4 +1,4 @@
-FROM openjdk:17-jdk-slim
+FROM openjdk:21-jdk-slim
 WORKDIR /app
 COPY target/evolve-ui-1.0.0.jar app.jar
 EXPOSE 8090
